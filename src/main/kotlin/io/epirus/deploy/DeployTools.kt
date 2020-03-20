@@ -1,3 +1,5 @@
+@file:JvmName("DeployTools")
+
 package io.epirus.deploy
 
 import io.github.classgraph.ClassGraph

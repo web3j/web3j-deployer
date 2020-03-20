@@ -1,6 +1,6 @@
 package io.epirus.deploy.test;
 
-import io.epirus.deploy.DeployToolsKt;
+import io.epirus.deploy.DeployTools;
 import io.epirus.deploy.Deployable;
 import io.epirus.deploy.Deployer;
 import io.epirus.deploy.Predeploy;
@@ -36,7 +36,7 @@ public class DeployTest1 {
 
     @Test
     public void findDeployerTest1() {
-        Deployer deployer = DeployToolsKt.findDeployer("deploy-test-1", "io.epirus.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("deploy-test-1", "io.epirus.deploy.test");
 
         Assert.assertEquals("deploy-test-1", deployer.getNetwork());
     }
