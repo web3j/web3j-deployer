@@ -9,6 +9,8 @@ Through the use of two annotations, `@Predeploy` and `@Deployable`, developers c
 Let's start by looking at `@Predeploy` and how this is used to define a Deployer instance for a given network
 
 ```java
+package com.example.deployers
+
 @Predeploy(network = "rinkeby")
 public Deployer deployRinkeby() {
     Credentials credentials = ...;
@@ -32,6 +34,8 @@ Deployer deployer = DeployTools.findDeployer(network, pkgFilter);
 Next you want to define methods that allows you to use the deployer. Often, for complex contract setups, you have multiple steps during a deployment process. Using the `@Deployable` annotation you can define the order you want them to execute, starting low:
 
 ```java
+package com.example.deploy
+
 @Deployable(order = 3)
 public void deployA(Deployer deployer) {
     ...
