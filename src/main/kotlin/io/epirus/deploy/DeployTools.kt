@@ -60,6 +60,54 @@ fun findDeployer(network: String, pkg: String): Deployer {
     return predeployMethod.invoke(instance) as Deployer
 }
 
+private fun runDeployer(deployer: Deployer, method: Method, instance: Any?) {
+    method.invoke(instance, deployer)
+}
+
 fun runDeployer(deployer: Deployer, pkg: String) {
-    TODO()
+    val deployableAnnotation = Deployable::class.java.name
+
+    val deployableMethods = mutableListOf<Method>()
+
+    ClassGraph()
+        //.verbose()
+        .enableAllInfo()
+        .whitelistPackages(pkg)
+        .scan().use { scanResult ->
+            for (classInfo in scanResult.allClasses) {
+                classInfo
+                    .declaredMethodInfo
+                    .filter {
+                        it.hasAnnotation(deployableAnnotation) &&
+                        it.isPublic &&
+                        it.parameterInfo.size == 1
+                    }
+                    .map {
+                        Pair(it.loadClassAndGetMethod(), it.annotationInfo
+                                                            .filter { it.name.equals(deployableAnnotation) }
+                                                            .map { it.parameterValues.getValue("order") }
+                                                            .filterIsInstance<Int>())
+                    }
+                    .filter {
+                        Deployer::class.java.equals(it.first.parameterTypes.first()) && it.second.isNotEmpty()
+                    }
+                    .map {
+                        Pair(it.first, it.second.min())
+                    }
+                    .sortedBy {
+                        it.second
+                    }
+                    .forEach {
+                        deployableMethods.add(it.first)
+                    }
+            }
+        }
+
+    val methodInstance = mutableMapOf<Class<*>, Any?>()
+
+    deployableMethods.forEach { method ->
+        runDeployer(deployer, method, methodInstance.getOrPut(method.declaringClass) {
+            if (Modifier.isStatic(method.modifiers)) null else method.declaringClass.getDeclaredConstructor().newInstance()
+        })
+    }
 }
