@@ -15,14 +15,24 @@ import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.gas.DefaultGasProvider;
 
 public class DeployTest1 {
-    @Predeploy(network = "deploy-test-1")
-    public Deployer deployable() {
+    @Predeploy(network = "network-1")
+    public Deployer deployable1() {
         Credentials credentials = Credentials.create("0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63");
 
         Configuration configuration = new Configuration(new Address(credentials.getAddress()), 10);
         Web3j web3j = Web3j.build(new EmbeddedWeb3jService(configuration));
 
-        return new Deployer(web3j, new FastRawTransactionManager(web3j, credentials), new DefaultGasProvider(), "deploy-test-1");
+        return new Deployer(web3j, new FastRawTransactionManager(web3j, credentials), new DefaultGasProvider(), "network-1");
+    }
+
+    @Predeploy(network = "network-2")
+    public Deployer deployable2() {
+        Credentials credentials = Credentials.create("0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63");
+
+        Configuration configuration = new Configuration(new Address(credentials.getAddress()), 10);
+        Web3j web3j = Web3j.build(new EmbeddedWeb3jService(configuration));
+
+        return new Deployer(web3j, new FastRawTransactionManager(web3j, credentials), new DefaultGasProvider(), "network-2");
     }
 
     @Deployable(order = 0)
@@ -36,8 +46,15 @@ public class DeployTest1 {
 
     @Test
     public void findDeployerTest1() {
-        Deployer deployer = DeployTools.findDeployer("deploy-test-1", "io.epirus.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-1", "io.epirus.deploy.test");
 
-        Assert.assertEquals("deploy-test-1", deployer.getNetwork());
+        Assert.assertEquals("network-1", deployer.getNetwork());
+    }
+
+    @Test
+    public void findDeployerTest2() {
+        Deployer deployer = DeployTools.findDeployer("network-2", "io.epirus.deploy.test");
+
+        Assert.assertEquals("network-2", deployer.getNetwork());
     }
 }

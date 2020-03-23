@@ -33,7 +33,11 @@ fun findDeployer(network: String, pkg: String): Deployer {
                     .filter {
                         it.hasAnnotation(predeployAnnotation) &&
                         it.isPublic &&
-                        it.parameterInfo.isEmpty()
+                        it.parameterInfo.isEmpty() &&
+                        it.annotationInfo
+                            .filter { it.name.equals(predeployAnnotation) }
+                            .map { it.parameterValues.getValue("network") }
+                            .contains(network)
                     }
                     .map {
                         it.loadClassAndGetMethod()
