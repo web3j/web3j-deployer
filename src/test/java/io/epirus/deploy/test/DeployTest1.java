@@ -57,4 +57,14 @@ public class DeployTest1 {
 
         Assert.assertEquals("network-2", deployer.getNetwork());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void findDeployerTest3() {
+        DeployTools.findDeployer("network-2", "foo.bar");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void findDeployerTest4() {
+        DeployTools.findDeployer("network-3", "io.epirus.deploy.test");
+    }
 }
