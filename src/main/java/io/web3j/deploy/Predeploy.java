@@ -1,4 +1,4 @@
-package io.epirus.deploy;
+package io.web3j.deploy;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

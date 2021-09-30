@@ -1,6 +1,6 @@
 @file:JvmName("DeployTools")
 
-package io.epirus.deploy
+package io.web3j.deploy
 
 import io.github.classgraph.ClassGraph
 import org.web3j.protocol.Web3j
@@ -105,6 +105,7 @@ fun runDeployer(deployer: Deployer, pkg: String) {
 
     val methodInstance = mutableMapOf<Class<*>, Any?>()
 
+    // List with orders in ascending order.
     deployableMethods.forEach { method ->
         runDeployer(deployer, method, methodInstance.getOrPut(method.declaringClass) {
             if (Modifier.isStatic(method.modifiers)) null else method.declaringClass.getDeclaredConstructor().newInstance()
