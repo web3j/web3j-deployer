@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Predeploy {
     String network();
+    String[] credentialKeys();
+    Web3jServiceType serviceType();
 }
