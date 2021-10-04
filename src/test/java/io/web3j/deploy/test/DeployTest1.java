@@ -49,7 +49,7 @@ public class DeployTest1 {
 
         final Web3j web3j;
         // Type of service also needs to be passed as a parameter?
-        Configuration configuration = new Configuration(new Address(credentials.getAddress()), 10);
+        Configuration configuration = new Configuration(new Address(credentials.getAddress()), preDeployAnnotation.ethFunds());
         switch (preDeployAnnotation.serviceType())  {
             case HttpService:
                 web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));

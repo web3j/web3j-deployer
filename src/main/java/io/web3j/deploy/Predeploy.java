@@ -11,4 +11,5 @@ public @interface Predeploy {
     String network();
     String[] credentialKeys();
     Web3jServiceType serviceType();
+    int ethFunds() default 1;
 }
