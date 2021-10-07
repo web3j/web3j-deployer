@@ -3,6 +3,7 @@
 package io.web3j.deploy
 
 import io.github.classgraph.ClassGraph
+import org.web3j.crypto.Credentials
 import org.web3j.protocol.Web3j
 import org.web3j.tx.TransactionManager
 import org.web3j.tx.gas.ContractGasProvider
@@ -17,17 +18,32 @@ class Deployer(
     val network: String
 )
 
+fun main(args: Array<String>)  {
+    val networkName: String;
+    val packageName: String;
+    if (args.size == 1 && args[0].split(',').size == 2) {
+        networkName = args[0].split(',')[0]
+        packageName = args[0].split(',')[1]
+    } else  {
+        throw IllegalArgumentException("Network name or package name is unknown")
+    }
+    println("Hello from Kotlin ${networkName} ${packageName}")
+    val deployer = findDeployer(networkName, packageName)
+    runDeployer(deployer, packageName)
+}
+
 fun findDeployer(network: String, pkg: String): Deployer {
     val predeployAnnotation = Predeploy::class.java.name
 
     val predeployMethods = mutableListOf<Method>()
 
     ClassGraph()
-        //.verbose()
+//        .verbose()
         .enableAllInfo()
         .whitelistPackages(pkg)
         .scan().use { scanResult ->
             for (classInfo in scanResult.allClasses) {
+//                println("Class names are: " + classInfo.name)
                 classInfo
                     .declaredMethodInfo
                     .filter {
