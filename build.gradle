@@ -30,6 +30,10 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "11"
 }
 
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
 task deploy(type:JavaExec) {
     main = 'io.web3j.deploy.DeployTools'
     classpath = sourceSets.main.runtimeClasspath

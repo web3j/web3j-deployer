@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Predeploy {
     String network();
-    String[] credentialKeys();
-    Web3jServiceType serviceType();
+    String[] credentialKeys() default {};
+    Web3jServiceType serviceType() default Web3jServiceType.HttpService;
     int ethFunds() default 1;
 }
