@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Predeploy {
-    String network();
+    String profile();
     String[] credentialKeys() default {};
     Web3jServiceType serviceType() default Web3jServiceType.HttpService;
     int ethFunds() default 1;

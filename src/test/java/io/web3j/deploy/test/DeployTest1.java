@@ -27,14 +27,14 @@ public class DeployTest1 {
         EVENTS.add("constructor");
     }
 
-    @Predeploy(network = "network-1",
+    @Predeploy(profile = "network-1",
             credentialKeys = {"6e7e35018bfcb52cce3be032c466099e8ae46b2a066e1f8cc5a09c80e2106e63",},
             serviceType = Web3jServiceType.HttpService)
     public Deployer deployable1() {
         Method[] methods = DeployTest1.class.getMethods();
         Predeploy preDeployAnnotation = methods[0].getAnnotation(Predeploy.class);
 
-        String network = preDeployAnnotation.network();
+        String network = preDeployAnnotation.profile();
         String[] credentialKeys = preDeployAnnotation.credentialKeys();
         System.out.println("My network: " + network);
         final Credentials credentials;
@@ -65,7 +65,7 @@ public class DeployTest1 {
     }
 
     // Deployment script
-    @Predeploy(network = "network-2",
+    @Predeploy(profile = "network-2",
             credentialKeys = {"6e7e35018bfcb52cce3be032c466099e8ae46b2a066e1f8cc5a09c80e2106e63",},
             serviceType = Web3jServiceType.HttpService)
     public Deployer deployable2() {

@@ -19,20 +19,23 @@ class Deployer(
 )
 
 fun main(args: Array<String>)  {
-    val networkName: String;
+    val profileName: String;
     val packageName: String;
     if (args.size == 1 && args[0].split(',').size == 2) {
-        networkName = args[0].split(',')[0]
+        profileName = args[0].split(',')[0]
         packageName = args[0].split(',')[1]
     } else  {
         throw IllegalArgumentException("Network name or package name is unknown")
     }
-    println("Hello from Kotlin ${networkName} ${packageName}")
-    val deployer = findDeployer(networkName, packageName)
-    runDeployer(deployer, packageName)
+    deploy(profileName, packageName)
 }
 
-fun findDeployer(network: String, pkg: String): Deployer {
+fun deploy(profile: String, pkg: String) {
+    val deployer = findDeployer(profile, pkg)
+    runDeployer(deployer, pkg)
+}
+
+fun findDeployer(profile: String, pkg: String): Deployer {
     val predeployAnnotation = Predeploy::class.java.name
 
     val predeployMethods = mutableListOf<Method>()
@@ -52,8 +55,8 @@ fun findDeployer(network: String, pkg: String): Deployer {
                         it.parameterInfo.isEmpty() &&
                         it.annotationInfo
                             .filter { it.name.equals(predeployAnnotation) }
-                            .map { it.parameterValues.getValue("network") }
-                            .contains(network)
+                            .map { it.parameterValues.getValue("profile") }
+                            .contains(profile)
                     }
                     .map {
                         it.loadClassAndGetMethod()
@@ -67,7 +70,7 @@ fun findDeployer(network: String, pkg: String): Deployer {
             }
         }
 
-    if (predeployMethods.size != 1) throw IllegalArgumentException("Invalid number of deployer candidates found for network $network within $pkg: ${predeployMethods.size}")
+    if (predeployMethods.size != 1) throw IllegalArgumentException("Invalid number of deployer candidates found for profile $profile within $pkg: ${predeployMethods.size}")
 
     val predeployMethod = predeployMethods.first()
 
