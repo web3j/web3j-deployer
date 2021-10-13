@@ -15,7 +15,7 @@ class Deployer(
     val web3j: Web3j,
     val transactionManager: TransactionManager,
     val gasProvider: ContractGasProvider,
-    val network: String
+    val profile: String
 )
 
 fun main(args: Array<String>)  {

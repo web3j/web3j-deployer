@@ -79,30 +79,30 @@ public class DeployTest1 {
 
     @Deployable(order = 3)
     public void deploy1(Deployer deployer) {
-        EVENTS.add("deploy1: " + deployer.getNetwork());
+        EVENTS.add("deploy1: " + deployer.getProfile());
 //        deployer.getWeb3j().ethAccounts().send();
     }
 
     @Deployable(order = 2)
     public void deploy2(Deployer deployer) {
-        EVENTS.add("deploy2: " + deployer.getNetwork());
+        EVENTS.add("deploy2: " + deployer.getProfile());
     }
 
     @Deployable(order = 1)
     public void deploy3(Deployer deployer) {
-        EVENTS.add("deploy3: " + deployer.getNetwork());
+        EVENTS.add("deploy3: " + deployer.getProfile());
     }
 
     @Test
     public void findDeployerTest1() {
         Deployer deployer = DeployTools.findDeployer("network-1","io.web3j.deploy.test");
-        Assert.assertEquals("network-1", deployer.getNetwork());
+        Assert.assertEquals("network-1", deployer.getProfile());
     }
 
     @Test
     public void findDeployerTest2() {
         Deployer deployer = DeployTools.findDeployer("network-2","io.web3j.deploy.test");
-        Assert.assertEquals("network-2", deployer.getNetwork());
+        Assert.assertEquals("network-2", deployer.getProfile());
     }
 
     @Test(expected = IllegalArgumentException.class)
