@@ -4,7 +4,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'org.example'
+group 'org.web3j'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
@@ -38,8 +38,8 @@ apply plugin: 'idea'
 gradlePlugin {
     plugins {
         deploy {
-            id = 'io.web3j.deploy'
-            implementationClass = 'io.web3j.deploy.DeployPlugin'
+            id = 'org.web3j.deploy'
+            implementationClass = 'org.web3j.deploy.DeployPlugin'
         }
     }
 }

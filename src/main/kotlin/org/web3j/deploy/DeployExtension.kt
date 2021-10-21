@@ -1,4 +1,4 @@
-package io.web3j.deploy
+package org.web3j.deploy
 
 
 open class DeployExtension {

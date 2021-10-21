@@ -1,10 +1,10 @@
-package io.web3j.deploy.test;
+package org.web3j.deploy.test;
 
-import io.web3j.deploy.DeployTools;
-import io.web3j.deploy.Deployable;
-import io.web3j.deploy.Deployer;
-import io.web3j.deploy.Predeploy;
-import io.web3j.deploy.Web3jServiceType;
+import org.web3j.deploy.DeployTools;
+import org.web3j.deploy.Deployable;
+import org.web3j.deploy.Deployer;
+import org.web3j.deploy.Predeploy;
+import org.web3j.deploy.Web3jServiceType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.web3j.abi.datatypes.Address;
@@ -95,13 +95,13 @@ public class DeployTest1 {
 
     @Test
     public void findDeployerTest1() {
-        Deployer deployer = DeployTools.findDeployer("network-1","io.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-1","org.web3j.deploy.test");
         Assert.assertEquals("network-1", deployer.getProfile());
     }
 
     @Test
     public void findDeployerTest2() {
-        Deployer deployer = DeployTools.findDeployer("network-2","io.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-2","org.web3j.deploy.test");
         Assert.assertEquals("network-2", deployer.getProfile());
     }
 
@@ -112,30 +112,30 @@ public class DeployTest1 {
 
     @Test(expected = IllegalArgumentException.class)
     public void findDeployerTest4() {
-        DeployTools.findDeployer("network-3", "io.web3j.deploy.test");
+        DeployTools.findDeployer("network-3", "org.web3j.deploy.test");
     }
 
     @Test
     public void runDeploy1() {
-        Deployer deployer = DeployTools.findDeployer("network-1", "io.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-1", "org.web3j.deploy.test");
 
         EVENTS.clear();
-        DeployTools.runDeployer(deployer, "io.web3j.deploy.test");
+        DeployTools.runDeployer(deployer, "org.web3j.deploy.test");
         Assert.assertEquals("[constructor, deploy3: network-1, deploy2: network-1, deploy1: network-1]", EVENTS.toString());
     }
 
     @Test
     public void runDeploy2() {
-        Deployer deployer = DeployTools.findDeployer("network-2", "io.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-2", "org.web3j.deploy.test");
 
         EVENTS.clear();
-        DeployTools.runDeployer(deployer, "io.web3j.deploy.test");
+        DeployTools.runDeployer(deployer, "org.web3j.deploy.test");
         Assert.assertEquals("[constructor, deploy3: network-2, deploy2: network-2, deploy1: network-2]", EVENTS.toString());
     }
 
     @Test
     public void runDeploy3() {
-        Deployer deployer = DeployTools.findDeployer("network-1", "io.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-1", "org.web3j.deploy.test");
 
         EVENTS.clear();
         DeployTools.runDeployer(deployer, "foo.bar");

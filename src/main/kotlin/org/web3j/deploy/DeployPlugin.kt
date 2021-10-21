@@ -1,4 +1,4 @@
-package io.web3j.deploy
+package org.web3j.deploy
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
