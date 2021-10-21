@@ -11,12 +11,12 @@ class DeployPlugin: Plugin<Project> {
         val task = project.tasks.create("deploy") {
             it.doLast {
                 println("${extension.profileName} from ${extension.networkName}")
-                println("Hello world")
+                println("Hello from Deploy Plugin")
                 findDeployer("network-1", "org.web3j")
-                println("Hello world")
+                println("Deployer found")
             }
         }
 
-        task.group = "mahima-deploy"
+        task.group = "web3j-deploy"
     }
 }

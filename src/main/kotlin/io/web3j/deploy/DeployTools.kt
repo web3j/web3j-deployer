@@ -46,7 +46,7 @@ fun findDeployer(profile: String, pkg: String): Deployer {
         .whitelistPackages(pkg)
         .scan().use { scanResult ->
             for (classInfo in scanResult.allClasses) {
-//                println("Class names are: " + classInfo.name)
+                println("Class names are: " + classInfo.name + "and package info: " + classInfo.packageInfo)
                 classInfo
                     .declaredMethodInfo
                     .filter {
