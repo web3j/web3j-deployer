@@ -1,6 +1,7 @@
 plugins {
-    id 'java'
+    id 'java-gradle-plugin'
     id 'org.jetbrains.kotlin.jvm' version '1.3.70'
+    id 'maven-publish'
 }
 
 group 'org.example'
@@ -34,7 +35,11 @@ compileTestKotlin {
 apply plugin: 'java'
 apply plugin: 'idea'
 
-task deploy(type:JavaExec) {
-    main = 'io.web3j.deploy.DeployTools'
-    classpath = sourceSets.main.runtimeClasspath
+gradlePlugin {
+    plugins {
+        deploy {
+            id = 'io.web3j.deploy'
+            implementationClass = 'io.web3j.deploy.DeployPlugin'
+        }
+    }
 }
