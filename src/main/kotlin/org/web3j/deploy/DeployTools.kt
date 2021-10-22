@@ -17,18 +17,6 @@ class Deployer(
     val profile: String
 )
 
-fun main(args: Array<String>)  {
-    val profileName: String;
-    val packageName: String;
-    if (args.size == 1 && args[0].split(',').size == 2) {
-        profileName = args[0].split(',')[0]
-        packageName = args[0].split(',')[1]
-    } else  {
-        throw IllegalArgumentException("Network name or package name is unknown")
-    }
-    deploy(profileName, packageName)
-}
-
 fun deploy(profile: String, pkg: String) {
     val deployer = findDeployer(profile, pkg)
     runDeployer(deployer, pkg)
@@ -45,7 +33,8 @@ fun findDeployer(profile: String, pkg: String): Deployer {
         .whitelistPackages(pkg)
         .scan().use { scanResult ->
             for (classInfo in scanResult.allClasses) {
-                println("Class names are: " + classInfo.name + "and package info: " + classInfo.packageInfo)
+                //TODO: Remove this print line
+                println("Class name: " + classInfo.name + "and package info: " + classInfo.packageInfo)
                 classInfo
                     .declaredMethodInfo
                     .filter {

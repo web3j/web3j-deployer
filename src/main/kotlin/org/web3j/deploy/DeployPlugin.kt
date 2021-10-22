@@ -12,11 +12,11 @@ class DeployPlugin: Plugin<Project> {
             it.doLast {
                 println("${extension.profileName} from ${extension.networkName}")
                 println("Hello from Deploy Plugin")
-                findDeployer("network-1", "org.web3j")
+                deploy("network-1", "org.web3j")
                 println("Deployer found")
             }
         }
 
-        task.group = "web3j-deploy"
+        task.group = "web3j"
     }
 }

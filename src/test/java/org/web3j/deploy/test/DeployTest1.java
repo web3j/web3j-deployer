@@ -22,54 +22,27 @@ import java.util.List;
 
 public class DeployTest1 {
     private final static List<String> EVENTS = new LinkedList<>();
-
+    private final static String ADMIN_PRIVATE_KEY = "0x6e7e35018bfcb52cce3be032c466099e8ae46b2a066e1f8cc5a09c80e2106e63";
     public DeployTest1() {
         EVENTS.add("constructor");
     }
 
-    @Predeploy(profile = "network-1",
-            credentialKeys = {"6e7e35018bfcb52cce3be032c466099e8ae46b2a066e1f8cc5a09c80e2106e63",},
-            serviceType = Web3jServiceType.HttpService)
+    @Predeploy(profile = "network-1")
     public Deployer deployable1() {
         Method[] methods = DeployTest1.class.getMethods();
         Predeploy preDeployAnnotation = methods[0].getAnnotation(Predeploy.class);
 
         String network = preDeployAnnotation.profile();
-        String[] credentialKeys = preDeployAnnotation.credentialKeys();
-        System.out.println("My network: " + network);
-        final Credentials credentials;
-        if (credentialKeys.length == 1)  {
-            credentials = Credentials.create(credentialKeys[0]);
-        }
-        else if (credentialKeys.length == 2) {
-            credentials = Credentials.create(credentialKeys[0], credentialKeys[1]);
-        } else  {
-            throw new IllegalArgumentException("No credentials provided for the credentials");
-        }
-
-        final Web3j web3j;
-        // Type of service also needs to be passed as a parameter?
-        Configuration configuration = new Configuration(new Address(credentials.getAddress()), preDeployAnnotation.ethFunds());
-        switch (preDeployAnnotation.serviceType())  {
-            case HttpService:
-                web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
-                break;
-            case EmbeddedWeb3jService:
-                web3j = Web3j.build(new EmbeddedWeb3jService(configuration));
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + preDeployAnnotation.serviceType());
-        }
+        final Credentials credentials = Credentials.create(ADMIN_PRIVATE_KEY);
+        final Web3j web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
 
         return new Deployer(web3j, new FastRawTransactionManager(web3j, credentials), new DefaultGasProvider(), "network-1");
     }
 
     // Deployment script
-    @Predeploy(profile = "network-2",
-            credentialKeys = {"6e7e35018bfcb52cce3be032c466099e8ae46b2a066e1f8cc5a09c80e2106e63",},
-            serviceType = Web3jServiceType.HttpService)
+    @Predeploy(profile = "network-2")
     public Deployer deployable2() {
-        Credentials credentials = Credentials.create("0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63");
+        Credentials credentials = Credentials.create(ADMIN_PRIVATE_KEY);
 
         Configuration configuration = new Configuration(new Address(credentials.getAddress()), 10);
         Web3j web3j = Web3j.build(new EmbeddedWeb3jService(configuration));
