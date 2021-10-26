@@ -9,6 +9,7 @@ import org.web3j.tx.gas.ContractGasProvider
 import java.lang.IllegalArgumentException
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.net.URLClassLoader
 
 class Deployer(
     val web3j: Web3j,
@@ -17,54 +18,57 @@ class Deployer(
     val profile: String
 )
 
-fun deploy(profile: String, pkg: String) {
-    val deployer = findDeployer(profile, pkg)
-    runDeployer(deployer, pkg)
+fun deploy(profile: String, pkg: String, classLoader: ClassLoader) {
+    findDeployer(profile, pkg, classLoader)?.let {
+        runDeployer(it, pkg)
+    }
 }
 
-fun findDeployer(profile: String, pkg: String): Deployer {
+fun findDeployer(profile: String, pkg: String, classLoader: ClassLoader): Deployer? {
     val predeployAnnotation = Predeploy::class.java.name
-
     val predeployMethods = mutableListOf<Method>()
 
     ClassGraph()
 //        .verbose()
-        .enableAllInfo()
+//        .enableAllInfo()
+        .enableAnnotationInfo()
         .whitelistPackages(pkg)
+        .overrideClassLoaders(classLoader)
         .scan().use { scanResult ->
             for (classInfo in scanResult.allClasses) {
                 //TODO: Remove this print line
-                println("Class name: " + classInfo.name + "and package info: " + classInfo.packageInfo)
+                println("Class name: " + classInfo.name + " and package info: " + classInfo.packageInfo)
                 classInfo
                     .declaredMethodInfo
                     .filter {
                         it.hasAnnotation(predeployAnnotation) &&
-                        it.isPublic &&
-                        it.parameterInfo.isEmpty() &&
-                        it.annotationInfo
-                            .filter { it.name.equals(predeployAnnotation) }
-                            .map { it.parameterValues.getValue("profile") }
-                            .contains(profile)
-                    }
-                    .map {
+                                it.isPublic &&
+                                it.parameterInfo.isEmpty() &&
+                                it.annotationInfo
+                                    .filter { it.name.equals(predeployAnnotation) }
+                                    .map { it.parameterValues.getValue("profile") }
+                                    .contains(profile)
+                    }.map {
                         it.loadClassAndGetMethod()
-                    }
-                    .filter {
-                        Deployer::class.java.equals(it.returnType)
-                    }
-                    .forEach {
+                    }.filter {
+                        Deployer::class.java == it.returnType
+                    }.forEach {
                         predeployMethods.add(it)
                     }
             }
         }
 
-    if (predeployMethods.size != 1) throw IllegalArgumentException("Invalid number of deployer candidates found for profile $profile within $pkg: ${predeployMethods.size}")
+    return if (predeployMethods.size > 1) { //throw IllegalArgumentException("Invalid number of deployer candidates found for profile $profile within $pkg: ${predeployMethods.size}")
 
-    val predeployMethod = predeployMethods.first()
+        val predeployMethod = predeployMethods.first()
 
-    val instance = if (Modifier.isStatic(predeployMethod.modifiers)) null else predeployMethod.declaringClass.getDeclaredConstructor().newInstance()
+        val instance = if (Modifier.isStatic(predeployMethod.modifiers)) null
+        else predeployMethod.declaringClass.getDeclaredConstructor().newInstance()
 
-    return predeployMethod.invoke(instance) as Deployer
+        predeployMethod.invoke(instance) as Deployer
+    } else {
+        null
+    }
 }
 
 private fun runDeployer(deployer: Deployer, method: Method, instance: Any?) {
@@ -78,7 +82,8 @@ fun runDeployer(deployer: Deployer, pkg: String) {
 
     ClassGraph()
         //.verbose()
-        .enableAllInfo()
+//        .enableAllInfo()
+        .enableAnnotationInfo()
         .whitelistPackages(pkg)
         .scan().use { scanResult ->
             for (classInfo in scanResult.allClasses) {
@@ -86,17 +91,17 @@ fun runDeployer(deployer: Deployer, pkg: String) {
                     .declaredMethodInfo
                     .filter {
                         it.hasAnnotation(deployableAnnotation) &&
-                        it.isPublic &&
-                        it.parameterInfo.size == 1
+                                it.isPublic &&
+                                it.parameterInfo.size == 1
                     }
                     .map {
                         Pair(it.loadClassAndGetMethod(), it.annotationInfo
-                                                            .filter { it.name.equals(deployableAnnotation) }
-                                                            .map { it.parameterValues.getValue("order") }
-                                                            .filterIsInstance<Int>())
+                            .filter { it.name.equals(deployableAnnotation) }
+                            .map { it.parameterValues.getValue("order") }
+                            .filterIsInstance<Int>())
                     }
                     .filter {
-                        Deployer::class.java.equals(it.first.parameterTypes.first()) && it.second.isNotEmpty()
+                        Deployer::class.java == it.first.parameterTypes.first() && it.second.isNotEmpty()
                     }
                     .map {
                         Pair(it.first, it.second.min())
@@ -115,7 +120,8 @@ fun runDeployer(deployer: Deployer, pkg: String) {
     // List with orders in ascending order.
     deployableMethods.forEach { method ->
         runDeployer(deployer, method, methodInstance.getOrPut(method.declaringClass) {
-            if (Modifier.isStatic(method.modifiers)) null else method.declaringClass.getDeclaredConstructor().newInstance()
+            if (Modifier.isStatic(method.modifiers)) null else method.declaringClass.getDeclaredConstructor()
+                .newInstance()
         })
     }
 }

@@ -68,29 +68,29 @@ public class DeployTest1 {
 
     @Test
     public void findDeployerTest1() {
-        Deployer deployer = DeployTools.findDeployer("network-1","org.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-1","org.web3j.deploy.test", classLoader);
         Assert.assertEquals("network-1", deployer.getProfile());
     }
 
     @Test
     public void findDeployerTest2() {
-        Deployer deployer = DeployTools.findDeployer("network-2","org.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-2","org.web3j.deploy.test", classLoader);
         Assert.assertEquals("network-2", deployer.getProfile());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void findDeployerTest3() {
-        DeployTools.findDeployer("network-2", "foo.bar");
+        DeployTools.findDeployer("network-2", "foo.bar", classLoader);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void findDeployerTest4() {
-        DeployTools.findDeployer("network-3", "org.web3j.deploy.test");
+        DeployTools.findDeployer("network-3", "org.web3j.deploy.test", classLoader);
     }
 
     @Test
     public void runDeploy1() {
-        Deployer deployer = DeployTools.findDeployer("network-1", "org.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-1", "org.web3j.deploy.test", classLoader);
 
         EVENTS.clear();
         DeployTools.runDeployer(deployer, "org.web3j.deploy.test");
@@ -99,7 +99,7 @@ public class DeployTest1 {
 
     @Test
     public void runDeploy2() {
-        Deployer deployer = DeployTools.findDeployer("network-2", "org.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-2", "org.web3j.deploy.test", classLoader);
 
         EVENTS.clear();
         DeployTools.runDeployer(deployer, "org.web3j.deploy.test");
@@ -108,7 +108,7 @@ public class DeployTest1 {
 
     @Test
     public void runDeploy3() {
-        Deployer deployer = DeployTools.findDeployer("network-1", "org.web3j.deploy.test");
+        Deployer deployer = DeployTools.findDeployer("network-1", "org.web3j.deploy.test", classLoader);
 
         EVENTS.clear();
         DeployTools.runDeployer(deployer, "foo.bar");

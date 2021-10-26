@@ -4,7 +4,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'org.web3j'
+group 'org.web3j.deploy'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
@@ -18,9 +18,11 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compile "org.web3j:core:4.8.7"
-    compile "io.github.classgraph:classgraph:4.8.65"
-    compile "org.web3j:web3j-evm:4.8.4"
+    implementation "org.web3j:core:4.8.7"
+    implementation "io.github.classgraph:classgraph:4.8.65"
+    implementation("org.web3j:web3j-evm:4.8.5") {
+        exclude group: 'org.hyperledger.besu'
+    }
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
