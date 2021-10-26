@@ -4,6 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
+import java.net.URL
 import java.net.URLClassLoader
 
 class DeployPlugin: Plugin<Project> {
@@ -12,31 +13,31 @@ class DeployPlugin: Plugin<Project> {
 
         val extension = project.extensions.create("deploy", DeployExtension::class.java)
 
+        val urls : MutableList<URL> = mutableListOf()
+
         project.afterEvaluate {
             val plugin = it.convention.getPlugin(JavaPluginConvention::class.java)
-
             plugin.sourceSets.forEach { sourceSet ->
-                processAnnotations(sourceSet)
+                urls.addAll(processAnnotations(sourceSet))
             }
+        }
 
-//            val task = project.tasks.create("deploy") { task ->
-//                task.doLast {
-//                    println("${extension.profileName} from ${extension.networkName}")
-//                    println("Hello from Deploy Plugin")
-//                    deploy("network-1", "org.web3j")
-//                    println("Deployer found")
-//                }
-//                task.group = "web3j"
-//            }
+        project.tasks.create("deploy") { task ->
+            task.doLast {
+                println("${extension.profileName} from ${extension.networkName}")
+                println("Hello from Deploy Plugin")
+                findDeployer("network-1", "org.testing", URLClassLoader(urls.toTypedArray()))
+                println("Deployer found")
+            }
+            task.group = "web3j"
         }
     }
 
-    private fun processAnnotations(sourceSet: SourceSet) {
-
+    private fun processAnnotations(sourceSet: SourceSet) : List<URL> {
         val urls = sourceSet.output.classesDirs.map {
             it.toURI().toURL()
-        }.toTypedArray()
+        }.toList()
 
-        val deployer = findDeployer("network-1", "org.testing", URLClassLoader(urls))
+        return urls
     }
 }

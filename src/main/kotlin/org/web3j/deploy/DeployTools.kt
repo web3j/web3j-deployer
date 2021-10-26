@@ -30,8 +30,8 @@ fun findDeployer(profile: String, pkg: String, classLoader: ClassLoader): Deploy
 
     ClassGraph()
 //        .verbose()
-//        .enableAllInfo()
-        .enableAnnotationInfo()
+        .enableAllInfo()
+//        .enableMethodInfo()
         .whitelistPackages(pkg)
         .overrideClassLoaders(classLoader)
         .scan().use { scanResult ->
@@ -41,6 +41,7 @@ fun findDeployer(profile: String, pkg: String, classLoader: ClassLoader): Deploy
                 classInfo
                     .declaredMethodInfo
                     .filter {
+                        println(it.name)
                         it.hasAnnotation(predeployAnnotation) &&
                                 it.isPublic &&
                                 it.parameterInfo.isEmpty() &&
@@ -82,8 +83,8 @@ fun runDeployer(deployer: Deployer, pkg: String) {
 
     ClassGraph()
         //.verbose()
-//        .enableAllInfo()
-        .enableAnnotationInfo()
+        .enableAllInfo()
+//        .enableMethodInfo()
         .whitelistPackages(pkg)
         .scan().use { scanResult ->
             for (classInfo in scanResult.allClasses) {
