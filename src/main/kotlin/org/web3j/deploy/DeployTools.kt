@@ -20,7 +20,7 @@ class Deployer(
 
 fun deploy(profile: String, pkg: String, classLoader: ClassLoader) {
     findDeployer(profile, pkg, classLoader)?.let {
-        runDeployer(it, pkg)
+        runDeployer(it, pkg, classLoader)
     }
 }
 
@@ -34,13 +34,15 @@ fun findDeployer(profile: String, pkg: String, classLoader: ClassLoader): Deploy
 //        .enableMethodInfo()
         .whitelistPackages(pkg)
         .overrideClassLoaders(classLoader)
+        .ignoreParentClassLoaders()
         .scan().use { scanResult ->
             for (classInfo in scanResult.allClasses) {
                 //TODO: Remove this print line
                 println("Class name: " + classInfo.name + " and package info: " + classInfo.packageInfo)
                 classInfo
                     .declaredMethodInfo
-                    .filter {
+                    .filter { it ->
+                        //TODO: Remove this print line
                         println(it.name)
                         it.hasAnnotation(predeployAnnotation) &&
                                 it.isPublic &&
@@ -68,6 +70,7 @@ fun findDeployer(profile: String, pkg: String, classLoader: ClassLoader): Deploy
 
         predeployMethod.invoke(instance) as Deployer
     } else {
+        println("No deployers found in the package: $pkg and profile $profile")
         null
     }
 }
@@ -76,7 +79,7 @@ private fun runDeployer(deployer: Deployer, method: Method, instance: Any?) {
     method.invoke(instance, deployer)
 }
 
-fun runDeployer(deployer: Deployer, pkg: String) {
+fun runDeployer(deployer: Deployer, pkg: String, classLoader: ClassLoader) {
     val deployableAnnotation = Deployable::class.java.name
 
     val deployableMethods = mutableListOf<Method>()
@@ -85,9 +88,13 @@ fun runDeployer(deployer: Deployer, pkg: String) {
         //.verbose()
         .enableAllInfo()
 //        .enableMethodInfo()
+        .overrideClassLoaders(classLoader)
+        .ignoreParentClassLoaders()
         .whitelistPackages(pkg)
         .scan().use { scanResult ->
             for (classInfo in scanResult.allClasses) {
+                //TODO: Remove this print line
+                println("Class name: " + classInfo.name + " and package info: " + classInfo.packageInfo)
                 classInfo
                     .declaredMethodInfo
                     .filter {

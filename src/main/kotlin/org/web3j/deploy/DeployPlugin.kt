@@ -18,7 +18,9 @@ class DeployPlugin: Plugin<Project> {
         project.afterEvaluate {
             val plugin = it.convention.getPlugin(JavaPluginConvention::class.java)
             plugin.sourceSets.forEach { sourceSet ->
-                urls.addAll(processAnnotations(sourceSet))
+                sourceSet.runtimeClasspath.forEach{path ->
+                    urls.add(path.toURI().toURL())
+                }
             }
         }
 
@@ -26,18 +28,9 @@ class DeployPlugin: Plugin<Project> {
             task.doLast {
                 println("${extension.profileName} from ${extension.networkName}")
                 println("Hello from Deploy Plugin")
-                findDeployer("network-1", "org.testing", URLClassLoader(urls.toTypedArray()))
-                println("Deployer found")
+                deploy("network-1", "org.testing", URLClassLoader(urls.toTypedArray()))
             }
             task.group = "web3j"
         }
-    }
-
-    private fun processAnnotations(sourceSet: SourceSet) : List<URL> {
-        val urls = sourceSet.output.classesDirs.map {
-            it.toURI().toURL()
-        }.toList()
-
-        return urls
     }
 }
