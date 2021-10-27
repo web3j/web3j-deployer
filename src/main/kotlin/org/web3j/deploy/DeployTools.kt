@@ -6,10 +6,8 @@ import io.github.classgraph.ClassGraph
 import org.web3j.protocol.Web3j
 import org.web3j.tx.TransactionManager
 import org.web3j.tx.gas.ContractGasProvider
-import java.lang.IllegalArgumentException
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import java.net.URLClassLoader
 
 class Deployer(
     val web3j: Web3j,

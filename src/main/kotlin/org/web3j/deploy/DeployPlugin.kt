@@ -3,16 +3,12 @@ package org.web3j.deploy
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSet
 import java.net.URL
 import java.net.URLClassLoader
 
 class DeployPlugin: Plugin<Project> {
 
     override fun apply(project: Project) {
-
-        val extension = project.extensions.create("deploy", DeployExtension::class.java)
-
         val urls : MutableList<URL> = mutableListOf()
 
         project.afterEvaluate {
@@ -25,10 +21,18 @@ class DeployPlugin: Plugin<Project> {
         }
 
         project.tasks.create("deploy") { task ->
+            var profileName : String? = null
+            var packageName : String? = null
+            if (project.properties.contains("profile")) {
+                profileName = project.properties.getValue("profile").toString()
+            }
+            if (project.properties.contains("package")) {
+                packageName = project.properties.getValue("package").toString()
+            }
             task.doLast {
-                println("${extension.profileName} from ${extension.networkName}")
                 println("Hello from Deploy Plugin")
-                deploy("network-1", "org.testing", URLClassLoader(urls.toTypedArray()))
+                if (profileName != null && packageName != null)
+                    deploy(profileName, packageName, URLClassLoader(urls.toTypedArray()))
             }
             task.group = "web3j"
         }
