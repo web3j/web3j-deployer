@@ -16,118 +16,114 @@ class Deployer(
     val profile: String
 )
 
-fun deploy(profile: String, pkg: String, classLoader: ClassLoader) {
-    findDeployer(profile, pkg, classLoader)?.let {
-        runDeployer(it, pkg, classLoader)
-    }
-}
+class DeployTools {
 
-fun findDeployer(profile: String, pkg: String, classLoader: ClassLoader): Deployer? {
-    val predeployAnnotation = Predeploy::class.java.name
-    val predeployMethods = mutableListOf<Method>()
-
-    ClassGraph()
-//        .verbose()
-        .enableAllInfo()
-//        .enableMethodInfo()
-        .whitelistPackages(pkg)
-        .overrideClassLoaders(classLoader)
-        .ignoreParentClassLoaders()
-        .scan().use { scanResult ->
-            for (classInfo in scanResult.allClasses) {
-                //TODO: Remove this print line
-                println("Class name: " + classInfo.name + " and package info: " + classInfo.packageInfo)
-                classInfo
-                    .declaredMethodInfo
-                    .filter { it ->
-                        //TODO: Remove this print line
-                        println(it.name)
-                        it.hasAnnotation(predeployAnnotation) &&
-                                it.isPublic &&
-                                it.parameterInfo.isEmpty() &&
-                                it.annotationInfo
-                                    .filter { it.name.equals(predeployAnnotation) }
-                                    .map { it.parameterValues.getValue("profile") }
-                                    .contains(profile)
-                    }.map {
-                        it.loadClassAndGetMethod()
-                    }.filter {
-                        Deployer::class.java == it.returnType
-                    }.forEach {
-                        predeployMethods.add(it)
-                    }
-            }
+    fun deploy(profile: String, pkg: String) {
+        findDeployer(profile, pkg)?.let {
+            runDeployer(it, pkg)
         }
-
-    return if (predeployMethods.size > 1) { //throw IllegalArgumentException("Invalid number of deployer candidates found for profile $profile within $pkg: ${predeployMethods.size}")
-
-        val predeployMethod = predeployMethods.first()
-
-        val instance = if (Modifier.isStatic(predeployMethod.modifiers)) null
-        else predeployMethod.declaringClass.getDeclaredConstructor().newInstance()
-
-        predeployMethod.invoke(instance) as Deployer
-    } else {
-        println("No deployers found in the package: $pkg and profile $profile")
-        null
     }
-}
 
-private fun runDeployer(deployer: Deployer, method: Method, instance: Any?) {
-    method.invoke(instance, deployer)
-}
+    fun findDeployer(profile: String, pkg: String): Deployer? {
+        val predeployAnnotation = Predeploy::class.java.name
+        val predeployMethods = mutableListOf<Method>()
 
-fun runDeployer(deployer: Deployer, pkg: String, classLoader: ClassLoader) {
-    val deployableAnnotation = Deployable::class.java.name
-
-    val deployableMethods = mutableListOf<Method>()
-
-    ClassGraph()
-        //.verbose()
-        .enableAllInfo()
-//        .enableMethodInfo()
-        .overrideClassLoaders(classLoader)
-        .ignoreParentClassLoaders()
-        .whitelistPackages(pkg)
-        .scan().use { scanResult ->
-            for (classInfo in scanResult.allClasses) {
-                //TODO: Remove this print line
-                println("Class name: " + classInfo.name + " and package info: " + classInfo.packageInfo)
-                classInfo
-                    .declaredMethodInfo
-                    .filter {
-                        it.hasAnnotation(deployableAnnotation) &&
-                                it.isPublic &&
-                                it.parameterInfo.size == 1
-                    }
-                    .map {
-                        Pair(it.loadClassAndGetMethod(), it.annotationInfo
-                            .filter { it.name.equals(deployableAnnotation) }
-                            .map { it.parameterValues.getValue("order") }
-                            .filterIsInstance<Int>())
-                    }
-                    .filter {
-                        Deployer::class.java == it.first.parameterTypes.first() && it.second.isNotEmpty()
-                    }
-                    .map {
-                        Pair(it.first, it.second.min())
-                    }
-                    .sortedBy {
-                        it.second
-                    }
-                    .forEach {
-                        deployableMethods.add(it.first)
-                    }
+        ClassGraph()
+            .enableAllInfo()
+            .whitelistPackages(pkg)
+            .scan().use { scanResult ->
+                for (classInfo in scanResult.allClasses) {
+                    //TODO: Remove this print line
+                    println("Class name: " + classInfo.name + " and package info: " + classInfo.packageInfo)
+                    classInfo
+                        .declaredMethodInfo
+                        .filter { it ->
+                            //TODO: Remove this print line
+                            println(it.name)
+                            it.hasAnnotation(predeployAnnotation) &&
+                                    it.isPublic &&
+                                    it.parameterInfo.isEmpty() &&
+                                    it.annotationInfo
+                                        .filter { it.name.equals(predeployAnnotation) }
+                                        .map { it.parameterValues.getValue("profile") }
+                                        .contains(profile)
+                        }.map {
+                            it.loadClassAndGetMethod()
+                        }.filter {
+                            Deployer::class.java == it.returnType
+                        }.forEach {
+                            predeployMethods.add(it)
+                        }
+                }
             }
+
+        println(predeployMethods.size)
+
+        return if (predeployMethods.size >= 1) {
+
+            val predeployMethod = predeployMethods.first()
+
+            val instance = if (Modifier.isStatic(predeployMethod.modifiers)) null
+            else predeployMethod.declaringClass.getDeclaredConstructor().newInstance()
+
+            predeployMethod.invoke(instance) as Deployer
+        } else {
+            println("No deployers found in the package: $pkg and profile $profile")
+            null
         }
+    }
 
-    val methodInstance = mutableMapOf<Class<*>, Any?>()
+    private fun runDeployer(deployer: Deployer, method: Method, instance: Any?) {
+        method.invoke(instance, deployer)
+    }
 
-    // List with orders in ascending order.
-    deployableMethods.forEach { method ->
-        runDeployer(deployer, method, methodInstance.getOrPut(method.declaringClass) {
-            if (Modifier.isStatic(method.modifiers)) null else method.declaringClass.getDeclaredConstructor()
-                .newInstance()
-        })
+    fun runDeployer(deployer: Deployer, pkg: String) {
+        val deployableAnnotation = Deployable::class.java.name
+
+        val deployableMethods = mutableListOf<Method>()
+
+        ClassGraph()
+            .enableAllInfo()
+            .whitelistPackages(pkg)
+            .scan().use { scanResult ->
+                for (classInfo in scanResult.allClasses) {
+                    //TODO: Remove this print line
+                    classInfo
+                        .declaredMethodInfo
+                        .filter {
+                            it.hasAnnotation(deployableAnnotation) &&
+                                    it.isPublic &&
+                                    it.parameterInfo.size == 1
+                        }
+                        .map {
+                            Pair(it.loadClassAndGetMethod(), it.annotationInfo
+                                .filter { it.name.equals(deployableAnnotation) }
+                                .map { it.parameterValues.getValue("order") }
+                                .filterIsInstance<Int>())
+                        }
+                        .filter {
+                            Deployer::class.java == it.first.parameterTypes.first() && it.second.isNotEmpty()
+                        }
+                        .map {
+                            Pair(it.first, it.second.min())
+                        }
+                        .sortedBy {
+                            it.second
+                        }
+                        .forEach {
+                            deployableMethods.add(it.first)
+                        }
+                }
+            }
+
+        val methodInstance = mutableMapOf<Class<*>, Any?>()
+
+        // List with orders in ascending order.
+        deployableMethods.forEach { method ->
+            runDeployer(deployer, method, methodInstance.getOrPut(method.declaringClass) {
+                if (Modifier.isStatic(method.modifiers)) null else method.declaringClass.getDeclaredConstructor()
+                    .newInstance()
+            })
+        }
     }
 }

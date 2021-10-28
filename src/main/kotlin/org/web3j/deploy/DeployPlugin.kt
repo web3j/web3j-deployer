@@ -11,6 +11,7 @@ class DeployPlugin: Plugin<Project> {
     override fun apply(project: Project) {
         val urls : MutableList<URL> = mutableListOf()
 
+        // Adding runtime classpath of project
         project.afterEvaluate {
             val plugin = it.convention.getPlugin(JavaPluginConvention::class.java)
             plugin.sourceSets.forEach { sourceSet ->
@@ -30,9 +31,25 @@ class DeployPlugin: Plugin<Project> {
                 packageName = project.properties.getValue("package").toString()
             }
             task.doLast {
-                println("Hello from Deploy Plugin")
-                if (profileName != null && packageName != null)
-                    deploy(profileName, packageName, URLClassLoader(urls.toTypedArray()))
+                val loader = URLClassLoader(urls.toTypedArray())
+                val deployToolsClass = loader.loadClass(DeployTools().javaClass.name)
+                deployToolsClass.declaredMethods.forEach { method ->
+                    println(method.name)
+                    method.parameters.forEach { param -> println(param.type) }
+                }
+
+                if (profileName != null && packageName != null) {
+                    val deployMethod = deployToolsClass.getDeclaredMethod(
+                        "deploy",
+                        String::class.java,
+                        String::class.java
+                    )
+
+                    deployMethod.invoke(deployToolsClass.newInstance(), profileName, packageName)
+                }
+                else {
+                    println("Parameter profile/package not passed correctly")
+                }
             }
             task.group = "web3j"
         }
