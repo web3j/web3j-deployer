@@ -1,3 +1,5 @@
+@file:JvmName("DeployPlugin")
+
 package org.web3j.deploy
 
 import org.gradle.api.Plugin
@@ -7,7 +9,6 @@ import java.net.URL
 import java.net.URLClassLoader
 
 class DeployPlugin: Plugin<Project> {
-
     override fun apply(project: Project) {
         val urls : MutableList<URL> = mutableListOf()
 
@@ -22,36 +23,31 @@ class DeployPlugin: Plugin<Project> {
         }
 
         project.tasks.create("deploy") { task ->
-            var profileName : String? = null
-            var packageName : String? = null
-            if (project.properties.contains("profile")) {
-                profileName = project.properties.getValue("profile").toString()
+            val profileName = project.properties.getOrDefault("profile", null)?.toString()
+            val packageName = project.properties.getOrDefault("package", null)?.toString()
+
+            if (profileName == null || packageName == null) {
+                println("Missing profile and/or package name parameters")
+                return@create
             }
-            if (project.properties.contains("package")) {
-                packageName = project.properties.getValue("package").toString()
-            }
+
             task.doLast {
                 val loader = URLClassLoader(urls.toTypedArray())
-                val deployToolsClass = loader.loadClass(DeployTools().javaClass.name)
-                deployToolsClass.declaredMethods.forEach { method ->
-                    println(method.name)
-                    method.parameters.forEach { param -> println(param.type) }
-                }
 
-                if (profileName != null && packageName != null) {
-                    val deployMethod = deployToolsClass.getDeclaredMethod(
-                        "deploy",
-                        String::class.java,
-                        String::class.java
-                    )
+                val deployToolsClass = loader.loadClass(DeployTools::class.java.name)
+                val deployToolsConstructor = deployToolsClass.getDeclaredConstructor()
+                val deployTools = deployToolsConstructor.newInstance()
+                val deploy = deployToolsClass.getDeclaredMethod(
+                    "deploy",
+                    String::class.java,
+                    String::class.java
+                )
 
-                    deployMethod.invoke(deployToolsClass.newInstance(), profileName, packageName)
-                }
-                else {
-                    println("Parameter profile/package not passed correctly")
-                }
+                deploy.invoke(deployTools, profileName, packageName)
             }
+
             task.group = "web3j"
+            task.dependsOn("build")
         }
     }
 }

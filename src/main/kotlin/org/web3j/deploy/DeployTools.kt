@@ -3,43 +3,28 @@
 package org.web3j.deploy
 
 import io.github.classgraph.ClassGraph
-import org.web3j.protocol.Web3j
-import org.web3j.tx.TransactionManager
-import org.web3j.tx.gas.ContractGasProvider
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
-class Deployer(
-    val web3j: Web3j,
-    val transactionManager: TransactionManager,
-    val gasProvider: ContractGasProvider,
-    val profile: String
-)
-
 class DeployTools {
-
     fun deploy(profile: String, pkg: String) {
-        findDeployer(profile, pkg)?.let {
-            runDeployer(it, pkg)
-        }
+        println("Starting deploy command with profile=$profile, package=$pkg")
+        val deployer = findDeployer(profile, pkg)
+        runDeployer(deployer, pkg)
     }
 
-    fun findDeployer(profile: String, pkg: String): Deployer? {
+    fun findDeployer(profile: String, pkg: String): Deployer {
         val predeployAnnotation = Predeploy::class.java.name
         val predeployMethods = mutableListOf<Method>()
 
         ClassGraph()
             .enableAllInfo()
-            .whitelistPackages(pkg)
+            .acceptPackages(pkg)
             .scan().use { scanResult ->
                 for (classInfo in scanResult.allClasses) {
-                    //TODO: Remove this print line
-                    println("Class name: " + classInfo.name + " and package info: " + classInfo.packageInfo)
                     classInfo
                         .declaredMethodInfo
                         .filter { it ->
-                            //TODO: Remove this print line
-                            println(it.name)
                             it.hasAnnotation(predeployAnnotation) &&
                                     it.isPublic &&
                                     it.parameterInfo.isEmpty() &&
@@ -57,20 +42,15 @@ class DeployTools {
                 }
             }
 
-        println(predeployMethods.size)
+        if (predeployMethods.size != 1) throw IllegalArgumentException("Invalid number of deployer candidates found for profile $profile within $pkg: ${predeployMethods.size}")
 
-        return if (predeployMethods.size >= 1) {
+        val predeployMethod = predeployMethods.first()
 
-            val predeployMethod = predeployMethods.first()
+        println("Obtaining deployer from ${predeployMethod.declaringClass.name}::${predeployMethod.name}")
 
-            val instance = if (Modifier.isStatic(predeployMethod.modifiers)) null
-            else predeployMethod.declaringClass.getDeclaredConstructor().newInstance()
+        val instance = (if (Modifier.isStatic(predeployMethod.modifiers)) null else predeployMethod.declaringClass.getDeclaredConstructor().newInstance())
 
-            predeployMethod.invoke(instance) as Deployer
-        } else {
-            println("No deployers found in the package: $pkg and profile $profile")
-            null
-        }
+        return predeployMethod.invoke(instance) as Deployer
     }
 
     private fun runDeployer(deployer: Deployer, method: Method, instance: Any?) {
@@ -84,10 +64,9 @@ class DeployTools {
 
         ClassGraph()
             .enableAllInfo()
-            .whitelistPackages(pkg)
+            .acceptPackages(pkg)
             .scan().use { scanResult ->
                 for (classInfo in scanResult.allClasses) {
-                    //TODO: Remove this print line
                     classInfo
                         .declaredMethodInfo
                         .filter {
@@ -96,7 +75,9 @@ class DeployTools {
                                     it.parameterInfo.size == 1
                         }
                         .map {
-                            Pair(it.loadClassAndGetMethod(), it.annotationInfo
+                            val methodClass = this.javaClass.classLoader.loadClass(it.className)
+                            val method = methodClass.getMethod(it.name, Deployer::class.java)
+                            Pair(method, it.annotationInfo
                                 .filter { it.name.equals(deployableAnnotation) }
                                 .map { it.parameterValues.getValue("order") }
                                 .filterIsInstance<Int>())
@@ -116,13 +97,14 @@ class DeployTools {
                 }
             }
 
+        println("Found " + deployableMethods.size + " methods with @Deployable annotation")
+
         val methodInstance = mutableMapOf<Class<*>, Any?>()
 
-        // List with orders in ascending order.
         deployableMethods.forEach { method ->
+            println("Running deployer on ${method.declaringClass.name}::${method.name}")
             runDeployer(deployer, method, methodInstance.getOrPut(method.declaringClass) {
-                if (Modifier.isStatic(method.modifiers)) null else method.declaringClass.getDeclaredConstructor()
-                    .newInstance()
+                if (Modifier.isStatic(method.modifiers)) null else method.declaringClass.getDeclaredConstructor().newInstance()
             })
         }
     }
