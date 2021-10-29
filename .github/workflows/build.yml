@@ -44,7 +44,4 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build
-        run: ./gradlew check jacocoTestReport
-      - name: After success
-        run: bash <(curl -s https://codecov.io/bash)
-        if: ${{ success() }}
+        run: ./gradlew build
