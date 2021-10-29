@@ -55,9 +55,9 @@ publishing {
 
                 developers {
                     developer {
-                        id = 'conor10'
-                        name = 'Conor Svensson'
-                        email = 'conor10@gmail.com'
+                        id = 'cfelde'
+                        name = 'Christian Felde'
+                        email = 'cfelde@gmail.com'
                     }
                 }
             }
