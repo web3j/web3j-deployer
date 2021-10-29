@@ -10,7 +10,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 
-description 'Library for managing deployments of Ethereum contracts and transactions..'
+description 'Library for managing deployments of Ethereum contracts and transactions.'
 
 
 gradlePlugin {

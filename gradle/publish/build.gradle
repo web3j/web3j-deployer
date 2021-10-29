@@ -31,8 +31,8 @@ publishing {
             artifact testsJar
 
             pom {
-                name = project.name
-                description.set(project.provider({ project.description }))
+                name = 'web3j-deployer'
+                description = 'Library for managing deployments of Ethereum contracts and transactions.'
                 url = 'https://web3j.io'
 
                 licenses {
