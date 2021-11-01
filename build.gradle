@@ -1,38 +1,14 @@
 plugins {
-    id 'java-gradle-plugin'
     id 'org.jetbrains.kotlin.jvm' version '1.3.72'
     id 'de.marcphilipp.nexus-publish' version '0.4.0'
     id 'io.codearte.nexus-staging' version '0.22.0'
-    id 'com.gradle.plugin-publish' version '0.12.0'
 }
+
 apply from: "$rootDir/gradle/publish/build.gradle"
 apply plugin: 'java'
 apply plugin: 'idea'
 
-
 description 'Library for managing deployments of Ethereum contracts and transactions.'
-
-
-gradlePlugin {
-    plugins {
-        deploy {
-            id = 'org.web3j.deploy'
-            implementationClass = 'org.web3j.deploy.DeployPlugin'
-        }
-    }
-}
-
-
-pluginBundle {
-    website = 'https://web3j.io/'
-    vcsUrl = 'https://github.com/web3j/web3j-deployer'
-    description = 'Gradle plugin for managing deployments of Ethereum contracts and transactions.'
-    tags = [
-            'ethereum',
-            'web3j',
-            'deployer'
-    ]
-}
 
 group 'org.web3j'
 version '4.8.8'
