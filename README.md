@@ -84,3 +84,8 @@ plugins {
     id 'org.web3j.deploy' version 'x.y.z'
 }
 ```
+
+## Example repository
+
+A simple demo example is made available within [web3j-deployer-demo](https://github.com/web3j/web3j-deployer-demo)
+showing how the annotations can be used to deploy and configure an actual contract.
