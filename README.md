@@ -1,3 +1,7 @@
+# Archive Notice
+
+> This project is no longer under active development and has been archived. The repository is kept for historical purposes and read-only access. No further updates or pull requests will be considered.
+
 # Web3j Deployer
 
 A simple and lightweight library for managing deployments of Ethereum contracts and transactions.
